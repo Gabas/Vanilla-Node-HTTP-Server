@@ -1,5 +1,5 @@
 {
-  "name": "Vanilla Node HTTP_Server",
+  "name": "Vanilla-Node-HTTP-Server",
   "version": "0.1.0",
   "description": "Simple Vanilla Node Server",
   "main": "index.js",
