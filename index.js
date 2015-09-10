@@ -1,37 +1,47 @@
 'use strict';
 
 var http = require('http');
+var fs = require('fs');
+var Router = require('./lib/router');
 
-var server = http.createServer(function(req, res) {
-	
-	req.on('data', function(data) {
-		if(req.url == '/greet'){
-			res.writeHead(200, {'Content-Type': 'application/json'});
-			res.write(JSON.stringify({"hello": JSON.parse(data).name }));
+var nameNumber = 1;
+
+var router = Router();
+
+router.get('/notes', function(req, res) {
+	fs.readFile('./notes/'+ (nameNumber - 1).toString() + '.json', function(err, data) {
+		if (err) { 
+			console.log(err);
+			res.writeHead(200, {'Content-Type': 'text/plain'});
+			res.write('NO File, please do POST first');
 			return res.end();
 		}
-	});
-
-	if(req.url == '/time'){
-		var time = new Date().toString();
-		res.writeHead(200, {'Content-Type': 'text/plain'});
-		res.write(time);
-		return res.end();
-	}
-
-	if(req.url.slice(0, 7) == '/greet/' && req.url[7]) {
-		var userName = req.url.slice(7);
-		res.writeHead(200, {'Content-Type': 'text/plain'});
-		res.write('Hello, ' + userName);
-		return res.end();
-	}
-
-	req.on('end', function() {
-		res.writeHead(404, {'Content-Type': 'text/plain'});
-		res.write('Page not found');
+		res.writeHead(200, {'Content-Type': 'application/json'});
+		res.write(JSON.stringify(JSON.parse(data)));
 		return res.end();
 	});
 });
+
+router.post('/notes', function(req, res) {
+	
+	req.on('data', function(data) {
+		var parsed = JSON.parse(data);
+		fs.writeFile('./notes/'+ nameNumber.toString() + '.json', JSON.stringify(parsed), function(err) {
+			if (err) { 
+				console.log(err); 
+			}
+			nameNumber++;
+		});
+	});
+	
+	req.on('end', function() {
+		res.writeHead(200, {'Content-Type': 'text/plain'});
+		res.write('Your data saved');
+		return res.end();
+	});
+});
+
+var server = http.createServer(router.route);
 
 server.listen(3000, function() {
 	console.log('server up');

@@ -3,33 +3,36 @@
 var expect = require('chai').expect;
 var chai = require('chai');
 var chaiHttp = require('chai-http');
+var fs = require('fs');
 chai.use(chaiHttp);
 
-require('../index.js');
-
+require(__dirname + '/../index.js');
 
 describe('index.js', function(){
-  describe('GET /greet', function(){
+  describe('POST /notes', function(){
 	var response;
 	var error;
+	var exist;
 	
-	before(function(done){
-	  chai.request('localhost:3000')
-		.get('/greet/roman')
-		.end(function(err, res){
-			console.log('response:', res.text); // this is the response
-			error = err;
-			response = res;
-			done();
+	beforeEach(function(done){
+		chai.request('localhost:3000')
+			.post('/notes')
+			.send({name: "'Roman'"})
+			.end(function(e, res){
+				console.log('response:');
+				error = e;
+				response = res;
+				done();
+				exist = fs.existsSync('./notes/1.json');
 		});
 	});
 
 	it('shoud not return an error', function(){
-	  expect(error).to.eql(null);
+		expect(error).to.eql(null);
 	});
 
-	it('should have somehting', function(){
-	  expect(response.text).to.eql('Hello, roman');
+	it('should return true if file created', function(){
+		expect(true).to.eql(exist);
 	});
   });
 });
